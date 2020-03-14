@@ -5,10 +5,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.namelessmc</groupId>
 	<artifactId>NamelessAPI</artifactId>
-	<version>arim-1.0.2</version>
+	<version>arim-1.0.3</version>
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<universal.version>0.6.9-SNAPSHOT</universal.version>
+		<gson.version>2.8.6</gson.version>
 	</properties>
 	
 	<licenses>
@@ -35,7 +37,38 @@
 	
 	<build>
 		<sourceDirectory>src</sourceDirectory>
+		<finalName>NamelessAPI</finalName>
+		<resources>
+			<resource>
+				<directory>${project.build.directory}/shared-resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<configuration>
+					<outputDirectory>${project.build.directory}/shared-resources</outputDirectory>
+					<excludeTransitive>true</excludeTransitive>
+				</configuration>
+				<executions>
+					<execution>
+						<id>unpack-shared-resources</id>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<includes>LICENSE.txt</includes>
+							<includeGroupIds>space.arim</includeGroupIds>
+							<includeArtifactIds>universal-gpl</includeArtifactIds>
+							<includeScope>provided</includeScope>
+							<includeTypes>zip</includeTypes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -61,11 +94,25 @@
 	
 	<dependencies>
 		<dependency>
+			<groupId>space.arim</groupId>
+			<artifactId>universal-gpl</artifactId>
+			<version>${universal.version}</version>
+			<type>zip</type>
+			<optional>true</optional>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.8.6</version>
+			<version>${gson.version}</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 	
+	<repositories>
+		<repository>
+			<id>arim-repo</id>
+			<url>https://dl.cloudsmith.io/public/anand-beh/arim-repo/maven/</url>
+		</repository>
+	</repositories>
 </project>
