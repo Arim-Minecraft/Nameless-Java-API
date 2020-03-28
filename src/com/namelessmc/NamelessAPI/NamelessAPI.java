@@ -19,10 +19,9 @@ public final class NamelessAPI {
 
 	private static final String DEFAULT_USER_AGENT = "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)";
 
-	public static boolean DEBUG_MODE = false;
-
-	private final URL apiUrl;
-
+	final URL apiUrl;
+	final boolean debug;
+	
 	private String userAgent = null;
 
 	/**
@@ -30,10 +29,8 @@ public final class NamelessAPI {
 	 * @param debug If debug is set to true, debug messages are enabled for <i>every</i> NamelessAPI instance.
 	 */
 	public NamelessAPI(final URL apiUrl, final boolean debug) {
-		if (debug) {
-			DEBUG_MODE = true;
-		}
 		this.apiUrl = apiUrl;
+		this.debug = debug;
 		this.userAgent = DEFAULT_USER_AGENT;
 	}
 
@@ -44,11 +41,8 @@ public final class NamelessAPI {
 	 * @throws MalformedURLException
 	 */
 	public NamelessAPI(final String host, final String apiKey, final boolean debug) throws MalformedURLException {
-		if (debug) {
-			DEBUG_MODE = true;
-		}
-
 		this.apiUrl = new URL(host + "/index.php?route=/api/v2/" + apiKey);
+		this.debug = debug;
 		this.userAgent = DEFAULT_USER_AGENT;
 	}
 
@@ -63,7 +57,7 @@ public final class NamelessAPI {
 	 */
 	public NamelessException checkWebAPIConnection() {
 		try {
-			final Request request = new Request(this.apiUrl, this.userAgent,  Action.INFO);
+			final Request request = new Request(this,  Action.INFO);
 			request.connect();
 
 			if (request.hasError()) {
@@ -87,7 +81,7 @@ public final class NamelessAPI {
 	 * @throws NamelessException if there is an error in the request
 	 */
 	public List<Announcement> getAnnouncements() throws NamelessException {
-		final Request request = new Request(this.apiUrl, this.userAgent,  Action.GET_ANNOUNCEMENTS);
+		final Request request = new Request(this,  Action.GET_ANNOUNCEMENTS);
 		request.connect();
 
 		if (request.hasError()) {
@@ -115,7 +109,7 @@ public final class NamelessAPI {
 	 * @throws NamelessException if there is an error in the request
 	 */
 	public List<Announcement> getAnnouncements(final UUID uuid) throws NamelessException {
-		final Request request = new Request(this.apiUrl, this.userAgent, Action.GET_ANNOUNCEMENTS, new ParameterBuilder().add("uuid", uuid).build());
+		final Request request = new Request(this, Action.GET_ANNOUNCEMENTS, new ParameterBuilder().add("uuid", uuid).build());
 		request.connect();
 
 		if (request.hasError()) {
@@ -136,7 +130,7 @@ public final class NamelessAPI {
 	}
 
 	public void submitServerInfo(final String jsonData) throws NamelessException {
-		final Request request = new Request(this.apiUrl, this.userAgent, Action.SERVER_INFO, new ParameterBuilder().add("info", jsonData).build());
+		final Request request = new Request(this, Action.SERVER_INFO, new ParameterBuilder().add("info", jsonData).build());
 		request.connect();
 		if (request.hasError()) {
 			throw new ApiError(request.getError());
@@ -144,7 +138,7 @@ public final class NamelessAPI {
 	}
 
 	public Website getWebsite() throws NamelessException {
-		final Request request = new Request(this.apiUrl, this.userAgent, Action.INFO);
+		final Request request = new Request(this, Action.INFO);
 		request.connect();
 
 		if (request.hasError()) {
@@ -174,7 +168,7 @@ public final class NamelessAPI {
 
 	public boolean validateUser(final UUID uuid, final String code) throws NamelessException {
 		final String[] parameters = new ParameterBuilder().add("uuid", uuid.toString()).add("code", code).build();
-		final Request request = new Request(this.apiUrl, this.userAgent, Action.VALIDATE_USER, parameters);
+		final Request request = new Request(this, Action.VALIDATE_USER, parameters);
 		request.connect();
 		if (request.hasError()) {
 			final int errorCode = request.getError();
@@ -187,11 +181,11 @@ public final class NamelessAPI {
 	}
 
 	public NamelessPlayer getPlayer(final UUID uuid) throws NamelessException {
-		return new NamelessPlayer(uuid, this.apiUrl, this.userAgent);
+		return new NamelessPlayer(uuid, this);
 	}
 
 	public Map<UUID, String> getRegisteredUsers(final boolean hideInactive, final boolean hideBanned) throws NamelessException {
-		final Request request = new Request(this.apiUrl, this.userAgent, Action.LIST_USERS);
+		final Request request = new Request(this, Action.LIST_USERS);
 		request.connect();
 		if (request.hasError()) {
 			throw new ApiError(request.getError());

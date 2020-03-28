@@ -21,7 +21,8 @@ import com.google.gson.JsonParser;
 
 public class Request {
 
-	private URL url;
+	private final NamelessAPI api;
+	private final URL url;
 	private final RequestMethod method;
 	private final String parameters;
 	private final Action action;
@@ -31,14 +32,15 @@ public class Request {
 	private boolean hasError;
 	private int errorCode = -1;
 
-	public Request(final URL baseUrl, final String userAgent, final Action action, final String... parameters) {
-		this.userAgent = userAgent;
+	public Request(NamelessAPI api, final Action action, final String... parameters) {
+		this.api = api;
+		this.userAgent = api.getUserAgent();
 		this.action = action;
 		this.method = action.method;
 		this.parameters = String.join("&", parameters);
 
 		try {
-			final String base = baseUrl.toString() + "/" + action.toString();
+			final String base = api.apiUrl.toString() + "/" + action.toString();
 
 			if (action.method == RequestMethod.GET && parameters.length > 0) {
 				this.url = new URL(base + "&" + this.parameters);
@@ -70,7 +72,7 @@ public class Request {
 
 	public void connect() throws NamelessException {
 
-		if (NamelessAPI.DEBUG_MODE) {
+		if (api.debug) {
 			System.out.println(String.format("NamelessAPI > Making %s request (%s", this.action.toString(), this.method.toString()));
 			System.out.println(String.format("NamelessAPI > URL: %s", this.url));
 			System.out.println(String.format("NamelessAPI > Parameters: %s", this.parameters));
@@ -149,7 +151,7 @@ public class Request {
 
 				final JsonParser parser = new JsonParser();
 
-				if (NamelessAPI.DEBUG_MODE) {
+				if (api.debug) {
 					System.out.println(String.format("NamelessAPI > Response: %s", responseBuilder.toString()));
 				}
 

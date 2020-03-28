@@ -1,6 +1,5 @@
 package com.namelessmc.NamelessAPI;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -22,9 +21,8 @@ public final class NamelessPlayer {
 	private boolean validated;
 	private boolean banned;
 	private String groupName;
-	
-	private final URL baseUrl;
-	private final String userAgent;
+
+	private final NamelessAPI api;
 	
 	/**
 	 * Creates a new NamelessPlayer object. This constructor should not be called in the main server thread.
@@ -32,12 +30,11 @@ public final class NamelessPlayer {
 	 * @param baseUrl Base API URL: <i>http(s)://yoursite.com/api/v2/API_KEY<i>
 	 * @throws NamelessException
 	 */
-	NamelessPlayer(final UUID uuid, final URL baseUrl, final String userAgent) throws NamelessException {
+	NamelessPlayer(final UUID uuid, NamelessAPI api) throws NamelessException {
+		this.api = api;
 		this.uuid = uuid;
-		this.baseUrl = baseUrl;
-		this.userAgent = userAgent;
 		
-		final Request request = new Request(baseUrl, userAgent, Action.USER_INFO, new ParameterBuilder().add("uuid", uuid).build());
+		final Request request = new Request(api, Action.USER_INFO, new ParameterBuilder().add("uuid", uuid).build());
 		this.init(request);
 	}
 	
@@ -193,7 +190,7 @@ public final class NamelessPlayer {
 		final String[] params = new ParameterBuilder()
 				.add("uuid", this.uuid)
 				.add("code", code).build();
-		final Request request = new Request(this.baseUrl,  this.userAgent, Action.VALIDATE_USER, params);
+		final Request request = new Request(api, Action.VALIDATE_USER, params);
 		request.connect();
 		
 		if (request.hasError()) {
@@ -206,7 +203,7 @@ public final class NamelessPlayer {
 	}
 	
 	public List<Notification> getNotifications() throws NamelessException {
-		final Request request = new Request(this.baseUrl, this.userAgent, Action.GET_NOTIFICATIONS, new ParameterBuilder().add("uuid", this.uuid).build());
+		final Request request = new Request(api, Action.GET_NOTIFICATIONS, new ParameterBuilder().add("uuid", this.uuid).build());
 		request.connect();
 		
 		if (request.hasError()) throw new ApiError(request.getError());
@@ -231,7 +228,7 @@ public final class NamelessPlayer {
 	 */
 	public void setGroup(final int groupId) throws NamelessException {
 		final String[] parameters = new ParameterBuilder().add("uuid", this.uuid).add("group_id", groupId).build();
-		final Request request = new Request(this.baseUrl, this.userAgent,  Action.SET_GROUP, parameters);
+		final Request request = new Request(api,  Action.SET_GROUP, parameters);
 		request.connect();
 		if (request.hasError()) throw new ApiError(request.getError());
 	}
@@ -246,7 +243,7 @@ public final class NamelessPlayer {
 	 */
 	public String register(final String minecraftName, final String email) throws NamelessException {
 		final String[] parameters = new ParameterBuilder().add("username", minecraftName).add("uuid", this.uuid).add("email", email).build();
-		final Request request = new Request(this.baseUrl, this.userAgent,  Action.REGISTER, parameters);
+		final Request request = new Request(api,  Action.REGISTER, parameters);
 		request.connect();
 		
 		if (request.hasError()) throw new ApiError(request.getError());
@@ -273,7 +270,7 @@ public final class NamelessPlayer {
 				.add("reported_username", reportedUsername)
 				.add("content", reason)
 				.build();
-		final Request request = new Request(this.baseUrl, this.userAgent,  Action.CREATE_REPORT, parameters);
+		final Request request = new Request(api,  Action.CREATE_REPORT, parameters);
 		request.connect();
 		if (request.hasError()) throw new ApiError(request.getError());
 	}
